@@ -4,15 +4,28 @@ ___
 ## Manual de uso do projeto
 ___
 
-1. Crie um dotenv com a chave da openai
+1. Crie um dotenv com a chave do Google Gemini
 ```
-OPENAI_API_KEY=your_api_key
+GOOGLE_API_KEY=your_api_key
 ```
+</br>
+
 2. Instale as dependências
 ```
-pip install -r requirements.txt
+py -m pip install -r requirements.txt
 ```
-3. Rode o index.py
+</br>
+
+3. Rode o projeto
 ```
-streamlit run index.py
+py -m streamlit run index.py
 ```
+</br>
+
+4. Acesse o link gerado no terminal
+```
+http://localhost:8501
+```
+</br>
+
+5. Faça upload de um arquivo CSV e faça perguntas sobre os dados
