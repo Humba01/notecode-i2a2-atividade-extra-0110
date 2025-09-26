@@ -6,4 +6,5 @@ seaborn==0.13.2
 scikit-learn==1.5.2
 fpdf2==2.7.9
 python-dotenv==1.0.1
-openai
+google-generativeai
+google

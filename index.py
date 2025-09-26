@@ -6,36 +6,36 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import IsolationForest
 from fpdf import FPDF
 from dotenv import load_dotenv
-from openai import OpenAI
+import google.generativeai as genai
 
 # Carrega chave da OpenAI do .env
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+key=os.getenv("GOOGLE_API_KEY")
 
-def responder_chatgpt(pergunta, df):
-    # Cria um resumo do dataset
-    resumo = df.describe(include="all").to_string()
+def responder_gemini(pergunta, df):
+    # Converte o DataFrame para CSV e limita o tamanho
+    csv_data = df.head(100).to_csv(index=False)
 
     prompt = f"""
-    Você é um assistente de análise de dados.
-    O usuário perguntou: "{pergunta}"
-    Aqui estão estatísticas do dataset:
-    {resumo}
-
-    Responda de forma clara, resumida e baseada nos dados fornecidos.
+    Você é um assistente de análise de dados. Use os dados CSV abaixo para responder à pergunta.
+    Dados CSV:
+    {csv_data}
+    
+    Pergunta: {pergunta}
+    Responda de forma completa, clara e concisa.
     """
+    # Chama a API do Gemini
+    if not key:
+        st.error("⚠️ A chave da API do Google Gemini não está configurada. Por favor, defina a variável de ambiente 'GOOGLE_API_KEY'.")
+        return "Chave da API não configurada."
+    else:
+        # Configure the API key
+        genai.configure(api_key=key)
+        # Now you can use the library to create models
+        model = genai.GenerativeModel('models/gemini-2.5-flash')
+        response = model.generate_content(prompt)
+        return response.text
 
-    resposta = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": pergunta}
-        ],
-        max_tokens=3000,
-        temperature=0.3
-    )
-
-    return resposta.choices[0].message.content
 
 # ===============================
 # Funções auxiliares
@@ -196,8 +196,8 @@ if arquivo:
                 resposta = "⚠️ Coluna não encontrada."
 
         else:
-            # 👉 Se não reconheceu a pergunta, joga para o ChatGPT
-            resposta = responder_chatgpt(pergunta, df)
+            # 👉 Se não reconheceu a pergunta, joga para o Gemini
+            resposta = responder_gemini(pergunta, df)
 
         # Exibe resposta
         if resposta is not None:
