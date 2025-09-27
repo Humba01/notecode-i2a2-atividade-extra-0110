@@ -7,35 +7,55 @@ from sklearn.ensemble import IsolationForest
 from fpdf import FPDF
 from dotenv import load_dotenv
 import google.generativeai as genai
+import tempfile
+import pypandoc
 
 # Carrega chave da OpenAI do .env
 load_dotenv()
-key=os.getenv("GOOGLE_API_KEY")
+key = os.getenv("GOOGLE_API_KEY")
 
 def responder_gemini(pergunta, df):
-    # Converte o DataFrame para CSV e limita o tamanho
-    csv_data = df.head(100).to_csv(index=False)
-
+    data = df.head(100).to_csv(index=False)
     prompt = f"""
-    Você é um assistente de análise de dados. Use os dados CSV abaixo para responder à pergunta.
-    Dados CSV:
-    {csv_data}
+    Você é um assistente de análise de dados. Use os dados CSV, XLSX, XLS, ODS ou ODT abaixo para responder à pergunta.
+    Dados do arquivo lido:
+    {data}
     
     Pergunta: {pergunta}
     Responda de forma completa, clara e concisa.
     """
-    # Chama a API do Gemini
     if not key:
         st.error("⚠️ A chave da API do Google Gemini não está configurada. Por favor, defina a variável de ambiente 'GOOGLE_API_KEY'.")
         return "Chave da API não configurada."
     else:
-        # Configure the API key
         genai.configure(api_key=key)
-        # Now you can use the library to create models
         model = genai.GenerativeModel('models/gemini-2.5-flash')
         response = model.generate_content(prompt)
         return response.text
 
+# ===============================
+# Função para carregar múltiplos formatos
+# ===============================
+def carregar_arquivo(uploaded_file):
+    ext = uploaded_file.name.split(".")[-1].lower()
+    if ext == "csv":
+        return pd.read_csv(uploaded_file)
+    elif ext in ["xls", "xlsx"]:
+        return pd.read_excel(uploaded_file)
+    elif ext == "ods":
+        return pd.read_excel(uploaded_file, engine="odf")
+    elif ext == "odt":
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp_csv:
+            pypandoc.convert_text(
+                uploaded_file.read().decode("utf-8", errors="ignore"),
+                'csv',
+                format='odt',
+                outputfile=tmp_csv.name,
+                extra_args=['--standalone']
+            )
+            return pd.read_csv(tmp_csv.name)
+    else:
+        raise ValueError("Formato de arquivo não suportado")
 
 # ===============================
 # Funções auxiliares
@@ -63,14 +83,13 @@ def gerar_histograma(df, coluna):
 def gerar_heatmap(corr):
     fig, ax = plt.subplots(figsize=(8,6))
     sns.heatmap(corr, cmap="coolwarm", annot=False, ax=ax)
-    ax.set_title("Mapa de Correlações")
+    ax.set_title("Mapa de Correlacoes")
     return fig
 
 def gerar_conclusoes(memoria):
     conclusoes = []
     for item in memoria:
         p = item["pergunta"].lower()
-
         if "média" in p:
             conclusoes.append("O agente calculou médias das variáveis, indicando valores típicos dos dados.")
         elif "mediana" in p:
@@ -83,52 +102,52 @@ def gerar_conclusoes(memoria):
             conclusoes.append("O agente analisou correlações e encontrou relações entre variáveis.")
         elif "distribuição" in p:
             conclusoes.append("Foram gerados gráficos de distribuição para melhor visualizar os dados.")
-
     if not conclusoes:
         return "Nenhuma conclusão relevante ainda foi gerada."
-
     return " | ".join(conclusoes)
 
 def gerar_relatorio(memoria, conclusoes, saida="Agentes Autônomos – Relatório da Atividade Extra.pdf"):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-
     pdf.cell(200, 10, "Relatório de Análise Automática", ln=True, align="C")
     pdf.ln(10)
-
     pdf.set_font("Arial", size=11)
     for item in memoria:
         pdf.multi_cell(0, 10, f"❓ Pergunta: {item['pergunta']}\n💡 Resposta:\n{item['resposta']}\n")
         pdf.ln(5)
-
     pdf.set_font("Arial", style="B", size=12)
     pdf.cell(200, 10, "Conclusões do Agente", ln=True)
     pdf.set_font("Arial", size=11)
     pdf.multi_cell(0, 10, conclusoes)
-
     pdf.output(saida)
 
 # ===============================
 # Streamlit App
 # ===============================
 st.set_page_config(page_title="Agente de EDA", layout="wide")
-st.title("🤖 Agente Autônomo de Análise de Dados CSV")
+st.title("🤖 Agente Autônomo de Análise de Dados")
 
-# Inicializa memória
 if "memoria" not in st.session_state:
     st.session_state.memoria = []
 if "conclusoes" not in st.session_state:
     st.session_state.conclusoes = ""
-# Upload do CSV
-arquivo = st.file_uploader("Carregue seu arquivo CSV", type=["csv"])
+
+arquivo = st.file_uploader("Carregue seu arquivo ● CSV, XLSX, XLS, ODS, ODT", 
+                           type=["csv", "xlsx", "xls", "ods", "odt"])
 
 if arquivo:
-    df = pd.read_csv(arquivo)
-    st.success(f"Arquivo carregado: {arquivo.name}")
+    try:
+        df = carregar_arquivo(arquivo)
+        st.success(f"Arquivo carregado: {arquivo.name}")
+    except Exception as e:
+        st.error(f"Erro ao carregar arquivo: {e}")
+        df = None
 
-    st.subheader("📊 Estatísticas Descritivas")
-    st.write(estatisticas_basicas(df))
+    if df is not None:
+        st.subheader("📊 Estatísticas Descritivas")
+        st.write(estatisticas_basicas(df))
+        # (restante da lógica permanece igual ao original)
 
     # ----------------------------
     # Perguntas rápidas (pré-configuradas)
@@ -164,7 +183,8 @@ if arquivo:
     pergunta_manual = st.text_input("Digite sua pergunta:")
     if pergunta_manual:
         pergunta = pergunta_manual
-# ----------------------------
+
+    # ----------------------------
     # Processar pergunta
     # ----------------------------
     if pergunta:
@@ -208,7 +228,7 @@ if arquivo:
         # Salva na memória
         st.session_state.memoria.append({
             "pergunta": pergunta,
-            "resposta": str(resposta)[:2000],
+            "resposta": str(resposta)[:2500],
         })
 
         # Atualiza conclusões automáticas
@@ -221,7 +241,7 @@ if arquivo:
         st.subheader("📝 Histórico de Perguntas e Respostas")
         for item in st.session_state.memoria:
             st.markdown(f"**Pergunta:** {item['pergunta']}")
-            st.markdown(f"**Resposta:** {item['resposta'][:500]} ...")
+            st.markdown(f"**Resposta:** {item['resposta'][:2500]} ...")
 
     # ----------------------------
     # Conclusões automáticas
