@@ -11,7 +11,7 @@ import tempfile
 import pypandoc
 
 # Carrega chave da OpenAI do .env
-load_dotenv()
+# load_dotenv()
 key = os.getenv("GOOGLE_API_KEY")
 
 def responder_gemini(pergunta, df):
