@@ -10,4 +10,4 @@ odfpy==1.4.1
 pypandoc==1.13
 google-generativeai
 google
-venv
+# venv
