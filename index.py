@@ -254,17 +254,25 @@ if arquivo:
         elif "média" in pergunta_lower:
             medias = df.mean(numeric_only=True)
             resposta = "Médias das colunas numéricas:\n" + medias.to_string()
+            if usa_graficos:
+                figura = gerar_barplot(df, df.select_dtypes(include="number").columns[0])
         elif "mediana" in pergunta_lower:
             medianas = df.median(numeric_only=True)
             resposta = "Medianas das colunas numéricas:\n" + medianas.to_string()
+            if usa_graficos:
+                figura = gerar_boxplot(df, df.select_dtypes(include="number").columns[0])
         elif "desvio" in pergunta_lower or "variância" in pergunta_lower:
             desvios = df.std(numeric_only=True)
             resposta = "Desvios padrão das colunas numéricas:\n" + desvios.to_string()
+            if usa_graficos:
+                figura = gerar_barplot(df, df.select_dtypes(include="number").columns[0])
         elif "outlier" in pergunta_lower or "anomalia" in pergunta_lower:
             outliers = detectar_outliers(df)
             resposta = f"Foram encontrados {len(outliers)} outliers."
             if len(outliers) > 0:
                 resposta += "\nExemplos de outliers:\n" + outliers.head().to_string()
+                if usa_graficos and not outliers.empty:
+                    figura = gerar_boxplot(df, df.select_dtypes(include="number").columns[0])
         elif "correlação" in pergunta_lower or "correlacao" in pergunta_lower:
             corr = correlacoes(df)
             resposta = "Matriz de correlações entre variáveis numéricas."
@@ -288,14 +296,19 @@ if arquivo:
                     st.session_state.graficos.append(figura)
                     st.session_state.perguntas.append(pergunta)
                     st.session_state.respostas.append(resposta)
+                
         elif "resumo" in pergunta_lower or "sumário" in pergunta_lower:
             resposta = "Estatísticas descritivas do dataset:\n" + estatisticas_basicas(df).to_string()
+            if usa_graficos:
+                figura = gerar_boxplot(df, df.select_dtypes(include="number").columns[0])
         elif "tabela cruzada" in pergunta_lower or "crosstab" in pergunta_lower:
             cat_cols = df.select_dtypes(include="object").columns
             if len(cat_cols) >= 2:
                 col1, col2 = cat_cols[:2]
                 ctab = gerar_crosstab(df, col1, col2)
                 resposta = f"Tabela cruzada entre {col1} e {col2}:\n" + ctab.to_string()
+                if usa_graficos:
+                    figura = gerar_barplot(df, col1)
         elif "heatmap" in pergunta_lower or "mapa" in pergunta_lower:
             corr = correlacoes(df)
             resposta = "Mapa de calor das correlações."
