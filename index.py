@@ -285,15 +285,17 @@ if arquivo:
         if st.button("Gerar desvio padrão entre grupos categóricos"):
             pergunta = "desvio padrão entre grupos categóricos"
 
-
     # ----------------------------
     # Pergunta manual (digitada)
     # ----------------------------
     st.subheader("❔ Pergunta Manual")
     pergunta_manual = st.text_input("Digite sua pergunta:")
+
     if pergunta_manual:
         pergunta = pergunta_manual
 
+    # Só processa se houver pergunta (manual ou rápida)
+    if pergunta:
         pergunta_lower = pergunta.lower()
         resposta = None
         figura = None
