@@ -201,8 +201,22 @@ if arquivo:
     if df is not None:
         st.subheader("📊 Estatísticas Descritivas")
         st.write(estatisticas_basicas(df))
-    
-    
+
+    #     # Exibe resposta
+    #     if resposta is not None:
+    #         st.write(resposta)
+    #     if figura is not None:
+    #         st.pyplot(figura)
+
+    #     # Salva na memória
+    #     st.session_state.memoria.append({
+    #         "pergunta": pergunta,
+    #         "resposta": str(resposta)[:2500],
+    #     })
+
+    #     # Atualiza conclusões automáticas
+    #     st.session_state.conclusoes = gerar_conclusoes(st.session_state.memoria)
+
     # ----------------------------
     # Perguntas rápidas (pré-configuradas)
     # ----------------------------
@@ -286,12 +300,15 @@ if arquivo:
 
         if "média" in pergunta_lower:
             resposta = str(df.mean(numeric_only=True))
+            st.write(resposta)
 
         elif "mediana" in pergunta_lower:
             resposta = str(df.median(numeric_only=True))
+            st.write(resposta)
 
         elif "desvio" in pergunta_lower or "variância" in pergunta_lower:
             resposta = str(df.std(numeric_only=True))
+            st.write(resposta)
 
         elif "outlier" in pergunta_lower or "anomalia" in pergunta_lower:
             resposta = "Outliers detectados."  # descrição
@@ -301,6 +318,9 @@ if arquivo:
         elif "correlação" in pergunta_lower or "correlacao" in pergunta_lower:
             resposta = "Gerado mapa de correlações."
             figura = gerar_heatmap(correlacoes(df))
+            st.write(resposta)
+            if figura is not None:
+                st.pyplot(figura)
 
         elif "distribuição" in pergunta_lower or "histograma" in pergunta_lower:
             num_cols = df.select_dtypes(include="number").columns
@@ -309,6 +329,7 @@ if arquivo:
                 resposta = f"Gerado histograma da coluna {num_cols[0]}."
             else:
                 resposta = "⚠️ Não há colunas numéricas para gerar histograma."
+            st.write(resposta)
 
         elif "relacionadas" in pergunta_lower or "relações" in pergunta_lower or "dispersão" in pergunta_lower or "scatter" in pergunta_lower:
             num_cols = df.select_dtypes(include="number").columns
@@ -317,6 +338,9 @@ if arquivo:
                 resposta = f"Exibido gráfico de dispersão entre {num_cols[0]} e {num_cols[1]}."
             else:
                 resposta = "⚠️ Não há colunas numéricas suficientes para gerar dispersão."
+            st.write(resposta)
+            if figura is not None:
+                st.pyplot(figura)
 
         elif "tabela cruzada" in pergunta_lower or "crosstab" in pergunta_lower:
             cat_cols = df.select_dtypes(exclude="number").columns
@@ -324,10 +348,14 @@ if arquivo:
                 resposta = str(gerar_crosstab(df, cat_cols[0], cat_cols[1]))
             else:
                 resposta = "⚠️ Não há colunas categóricas suficientes para gerar tabela cruzada."
+            st.write(resposta)
 
         elif "heatmap" in pergunta_lower or "mapa" in pergunta_lower:
             resposta = "Gerado mapa de calor de correlação."
             figura = gerar_heatmap(correlacoes(df))
+            st.write(resposta)
+            if figura is not None:
+                st.pyplot(figura)
 
         elif "boxplot" in pergunta_lower or "caixa" in pergunta_lower:
             num_cols = df.select_dtypes(include="number").columns
@@ -336,6 +364,9 @@ if arquivo:
                 resposta = f"Gerado boxplot da coluna {num_cols[0]}."
             else:
                 resposta = "⚠️ Não há colunas numéricas para gerar boxplot."
+            st.write(resposta)
+            if figura is not None:
+                st.pyplot(figura)
 
         elif "barras" in pergunta_lower or "barplot" in pergunta_lower or "frequência" in pergunta_lower or "categorias" in pergunta_lower:
             cat_cols = df.select_dtypes(exclude="number").columns
@@ -344,6 +375,9 @@ if arquivo:
                 resposta = f"Gerado gráfico de barras da coluna {cat_cols[0]}."
             else:
                 resposta = "⚠️ Não há colunas categóricas para gerar gráfico de barras."
+            st.write(resposta)
+            if figura is not None:
+                st.pyplot(figura)
 
         elif "linha" in pergunta_lower or "tendência" in pergunta_lower or "evolução" in pergunta_lower or "time series" in pergunta_lower:
             num_cols = df.select_dtypes(include="number").columns
@@ -352,10 +386,16 @@ if arquivo:
                 resposta = f"Gerado gráfico de linha entre {num_cols[0]} e {num_cols[1]}."
             else:
                 resposta = "⚠️ Não há colunas suficientes para gerar gráfico de linha."
+            st.write(resposta)
+            if figura is not None:
+                st.pyplot(figura)
 
         elif "pairplot" in pergunta_lower or "matriz de dispersão" in pergunta_lower:
             figura = gerar_pairplot(df)
             resposta = "Gerada matriz de dispersão (pairplot) para múltiplas variáveis."
+            st.write(resposta)
+            if figura is not None:
+                st.pyplot(figura)
 
         elif "pizza" in pergunta_lower or "pie" in pergunta_lower or "proporção" in pergunta_lower:
             cat_cols = df.select_dtypes(exclude="number").columns
@@ -364,6 +404,9 @@ if arquivo:
                 resposta = f"Gerado gráfico de pizza da coluna {cat_cols[0]}."
             else:
                 resposta = "⚠️ Não há colunas categóricas para gerar gráfico de pizza."
+            st.write(resposta)
+            if figura is not None:
+                st.pyplot(figura)
 
         else:
             resposta = responder_gemini(pergunta, df)
