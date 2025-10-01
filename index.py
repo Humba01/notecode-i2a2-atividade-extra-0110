@@ -201,6 +201,35 @@ if arquivo:
     if df is not None:
         st.subheader("📊 Estatísticas Descritivas")
         st.write(estatisticas_basicas(df))
+    
+    
+    # ----------------------------
+    # Perguntas rápidas (pré-configuradas)
+    # ----------------------------
+    st.subheader("⚡ Perguntas Rápidas")
+    col1, col2, col3 = st.columns(3)
+    col4, col5, col6 = st.columns(3)
+
+    pergunta = None  # inicializa
+
+    with col1:
+        if st.button("Qual a média dos dados?"):
+            pergunta = "média"
+    with col2:
+        if st.button("Qual a mediana dos dados?"):
+            pergunta = "mediana"
+    with col3:
+        if st.button("Qual o desvio padrão?"):
+            pergunta = "desvio"
+    with col4:
+        if st.button("Existe correlação entre variáveis?"):
+            pergunta = "correlação"
+    with col5:
+        if st.button("Detectar outliers"):
+            pergunta = "outliers"
+    with col6:
+        if st.button("Mostrar distribuição da coluna Amount"):
+            pergunta = "distribuição coluna Amount"
 
     # ----------------------------
     # Pergunta manual (digitada)
