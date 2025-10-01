@@ -208,10 +208,6 @@ if arquivo:
     st.subheader("⚡ Perguntas & Informações Rápidas")
     col1, col2, col3 = st.columns(3)
     col4, col5, col6 = st.columns(3)
-    col7, col8, col9 = st.columns(3)
-    col10, col11, col12 = st.columns(3)
-    col13, col14, col15 = st.columns(3)
-    col16, col17, col18 = st.columns(3)
 
     pergunta = None  # inicializa
 
@@ -233,48 +229,13 @@ if arquivo:
     with col6:
         if st.button("Qual a distribuição da coluna Amount?"):
             pergunta = "distribuição coluna Amount"
-    with col7:
-        if st.button("Qual o histograma da coluna Amount?"):
-            pergunta = "histograma coluna Amount"
-    with col8:
-        if st.button("Quais variáveis estão relacionadas?"):
-            pergunta = "variáveis relacionadas"
-    with col9:
-        if st.button("Mostre uma tabela cruzada de duas colunas categóricas"):
-            pergunta = "tabela cruzada"
-    with col10:
-        if st.button("Mostre um heatmap de correlações"):
-            pergunta = "heatmap"
-    with col11:
-        if st.button("Mostre um boxplot de uma coluna numérica"):
-            pergunta = "boxplot"
-    with col12:
-        if st.button("Mostre um gráfico de barras de uma coluna categórica"):
-            pergunta = "barras"
-    with col13:
-        if st.button("Mostre um gráfico de linha de uma coluna numérica ao longo do índice"):
-            pergunta = "linha"
-    with col14:
-        if st.button("Mostre um pairplot das colunas numéricas"):
-            pergunta = "pairplot"
-    with col15:
-        if st.button("Mostre um gráfico de pizza de uma coluna categórica"):
-            pergunta = "pizza"
-    with col16:
-        if st.button("Qual a média da coluna Amount?"):
-            pergunta = "média coluna Amount"
-    with col17:
-        if st.button("Qual a mediana da coluna Amount?"):
-            pergunta = "mediana coluna Amount"
-    with col18:
-        if st.button("Qual o desvio padrão da coluna Amount?"):
-            pergunta = "desvio coluna Amount"
 
     # ----------------------------
     # Pergunta manual (digitada)
     # ----------------------------
     st.subheader("❔ Pergunta Manual")
     col_input, col_checkbox = st.columns([4, 1])
+    st.markdown("<style>div.row-widget.stTextInput > div{align-items: center;}</style>", unsafe_allow_html=True)
     with col_input:
         pergunta_manual = st.text_input("Digite sua pergunta:")
     with col_checkbox:
@@ -283,122 +244,101 @@ if arquivo:
     if pergunta_manual:
         pergunta = pergunta_manual
 
-    # Só processa se houver pergunta (manual ou rápida)
     if pergunta:
         pergunta_lower = pergunta.lower()
         resposta = None
         figura = None
         if df is None:
             st.error("⚠️ Por favor, carregue um arquivo antes de fazer perguntas.")
+
         elif "média" in pergunta_lower:
-            resposta = df.mean(numeric_only=True).to_dict()
+            medias = df.mean(numeric_only=True)
+            resposta = "Médias das colunas numéricas:\n" + medias.to_string()
         elif "mediana" in pergunta_lower:
-            resposta = df.median(numeric_only=True).to_dict()
-        elif "desvio" in pergunta_lower:
-            resposta = df.std(numeric_only=True).to_dict()
-        elif "variância" in pergunta_lower:
-            resposta = df.var(numeric_only=True).to_dict()
+            medianas = df.median(numeric_only=True)
+            resposta = "Medianas das colunas numéricas:\n" + medianas.to_string()
+        elif "desvio" in pergunta_lower or "variância" in pergunta_lower:
+            desvios = df.std(numeric_only=True)
+            resposta = "Desvios padrão das colunas numéricas:\n" + desvios.to_string()
         elif "outlier" in pergunta_lower or "anomalia" in pergunta_lower:
             outliers = detectar_outliers(df)
-            resposta = f"Foram detectados {len(outliers)} outliers."
+            resposta = f"Foram encontrados {len(outliers)} outliers."
             if len(outliers) > 0:
                 resposta += "\nExemplos de outliers:\n" + outliers.head().to_string()
         elif "correlação" in pergunta_lower or "correlacao" in pergunta_lower:
             corr = correlacoes(df)
-            resposta = corr.to_dict()
+            resposta = "Matriz de correlações entre variáveis numéricas."
             if usa_graficos:
                 figura = gerar_heatmap(corr)
         elif "distribuição" in pergunta_lower or "histograma" in pergunta_lower:
             if "amount" in df.columns.str.lower():
-                coluna = [col for col in df.columns if col.lower() == "amount"][0]
+                coluna = df.columns[df.columns.str.lower() == "amount"][0]
             else:
                 coluna = df.select_dtypes(include="number").columns[0]
-            resposta = f"Gerando histograma para a coluna {coluna}."
+            resposta = f"Histograma da coluna {coluna}."
             if usa_graficos:
                 figura = gerar_histograma(df, coluna)
-        elif "dispersão" in pergunta_lower or "scatter" in pergunta_lower:
+        elif "relacionadas" in pergunta_lower or "relações" in pergunta_lower or "dispersão" in pergunta_lower or "scatter" in pergunta_lower:
             num_cols = df.select_dtypes(include="number").columns
             if len(num_cols) >= 2:
                 col_x, col_y = num_cols[:2]
-                resposta = f"Gerando gráfico de dispersão entre {col_x} e {col_y}."
+                resposta = f"Gráfico de dispersão entre {col_x} e {col_y}."
                 if usa_graficos:
                     figura = gerar_scatterplot(df, col_x, col_y)
-            else:
-                resposta = "Não há colunas numéricas suficientes para gráfico de dispersão."
+                    st.session_state.graficos.append(figura)
+                    st.session_state.perguntas.append(pergunta)
+                    st.session_state.respostas.append(resposta)
+        elif "resumo" in pergunta_lower or "sumário" in pergunta_lower:
+            resposta = "Estatísticas descritivas do dataset:\n" + estatisticas_basicas(df).to_string()
         elif "tabela cruzada" in pergunta_lower or "crosstab" in pergunta_lower:
             cat_cols = df.select_dtypes(include="object").columns
             if len(cat_cols) >= 2:
                 col1, col2 = cat_cols[:2]
                 ctab = gerar_crosstab(df, col1, col2)
-                resposta = ctab.to_string()
-                if usa_graficos:
-                    figura = gerar_barplot(df, col1)
+                resposta = f"Tabela cruzada entre {col1} e {col2}:\n" + ctab.to_string()
         elif "heatmap" in pergunta_lower or "mapa" in pergunta_lower:
             corr = correlacoes(df)
-            resposta = "Gerando mapa de calor de correlações."
+            resposta = "Mapa de calor das correlações."
             if usa_graficos:
                 figura = gerar_heatmap(corr)
         elif "boxplot" in pergunta_lower or "caixa" in pergunta_lower:
-            num_cols = df.select_dtypes(include="number").columns
-            if len(num_cols) > 0:
-                coluna = num_cols[0]
-                resposta = f"Gerando boxplot para a coluna {coluna}."
-                if usa_graficos:
-                    figura = gerar_boxplot(df, coluna)
+            if "amount" in df.columns.str.lower():
+                coluna = df.columns[df.columns.str.lower() == "amount"][0]
             else:
-                resposta = "Não há colunas numéricas para boxplot."
+                coluna = df.select_dtypes(include="number").columns[0]
+            resposta = f"Boxplot da coluna {coluna}."
+            if usa_graficos:
+                figura = gerar_boxplot(df, coluna)
         elif "barras" in pergunta_lower or "barplot" in pergunta_lower or "frequência" in pergunta_lower:
             cat_cols = df.select_dtypes(include="object").columns
-            if len(cat_cols) > 0:
-                coluna = cat_cols[0]
-                resposta = f"Gerando gráfico de barras para a coluna {coluna}."
+            if len(cat_cols) >= 2:
+                col1, col2 = cat_cols[:2]
+                resposta = f"Gráfico de barras entre {col1} e {col2}."
                 if usa_graficos:
-                    figura = gerar_barplot(df, coluna)
-            else:
-                resposta = "Não há colunas categóricas para gráfico de barras."
+                    figura = gerar_barplot(df, col1, col2)
         elif "linha" in pergunta_lower or "tendência" in pergunta_lower or "evolução" in pergunta_lower:
             num_cols = df.select_dtypes(include="number").columns
-            if len(num_cols) >= 1:
-                col_y = num_cols[0]
-                col_x = df.index.name if df.index.name else "index"
-                resposta = f"Gerando gráfico de linha para {col_y} ao longo do índice."
-                if usa_graficos:
-                    figura = gerar_lineplot(df.reset_index(), col_x, col_y)
-            else:
-                resposta = "Não há colunas numéricas para gráfico de linha."
-        elif "pairplot" in pergunta_lower or "matriz de dispersão" in pergunta_lower:
-            num_cols = df.select_dtypes(include="number").columns
             if len(num_cols) >= 2:
-                resposta = "Gerando matriz de dispersão (pairplot) para as colunas numéricas."
+                col_x, col_y = num_cols[:2]
+                resposta = f"Gráfico de linha entre {col_x} e {col_y}."
                 if usa_graficos:
-                    figura = gerar_pairplot(df)
+                    figura = gerar_lineplot(df, col_x, col_y)
+        elif "pairplot" in pergunta_lower or "matriz de dispersão" in pergunta_lower:
+            resposta = "Matriz de dispersão das primeiras 5 variáveis numéricas."
+            if usa_graficos:
+                figura = gerar_pairplot(df)
         elif "pizza" in pergunta_lower or "pie" in pergunta_lower or "proporção" in pergunta_lower:
             cat_cols = df.select_dtypes(include="object").columns
-            if len(cat_cols) > 0:
+            if len(cat_cols) >= 1:
                 coluna = cat_cols[0]
-                resposta = f"Gerando gráfico de pizza para a coluna {coluna}."
+                resposta = f"Gráfico de pizza da coluna {coluna}."
                 if usa_graficos:
                     figura = gerar_pizza(df, coluna)
-            else:
-                resposta = "Não há colunas categóricas para gráfico de pizza."
-        elif "média coluna amount" in pergunta_lower:
-            if "amount" in df.columns.str.lower():
-                coluna = [col for col in df.columns if col.lower() == "amount"][0]
-                resposta = {coluna: df[coluna].mean()}
-            else:
-                resposta = "A coluna 'Amount' não foi encontrada."
-        elif "mediana coluna amount" in pergunta_lower:
-            if "amount" in df.columns.str.lower():
-                coluna = [col for col in df.columns if col.lower() == "amount"][0]
-                resposta = {coluna: df[coluna].median()}
-            else:
-                resposta = "A coluna 'Amount' não foi encontrada."
-        elif "desvio coluna amount" in pergunta_lower:
-            if "amount" in df.columns.str.lower():
-                coluna = [col for col in df.columns if col.lower() == "amount"][0]
-                resposta = {coluna: df[coluna].std()}
-            else:
-                resposta = "A coluna 'Amount' não foi encontrada."
+        elif "relatório" in pergunta_lower or "report" in pergunta_lower:
+            resposta = "Gerando relatório completo do dataset."
+            if usa_graficos:
+                figura = gerar_relatorio(df)
+                resposta += "\nRelatório gerado com sucesso."
         else:
             resposta = responder_gemini(pergunta, df)
 
