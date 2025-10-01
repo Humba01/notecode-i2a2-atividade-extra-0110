@@ -22,7 +22,7 @@ def responder_gemini(pergunta, df):
     {data}
     
     Pergunta: {pergunta}
-    Responda de forma completa, clara e concisa.
+    Responda de forma completa, clara e concisa. Sem retornar como resposta códigos ou tabelas, apenas texto explicativo. Ou gráficos, se necessário.
     """
     if not key:
         st.error("⚠️ A chave da API do Google Gemini não está configurada. Por favor, defina a variável de ambiente 'GOOGLE_API_KEY'.")
