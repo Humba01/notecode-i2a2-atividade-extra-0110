@@ -31,6 +31,8 @@ def responder_gemini(pergunta, df):
         genai.configure(api_key=key)
         model = genai.GenerativeModel('models/gemini-2.5-flash')
         response = model.generate_content(prompt)
+        if response.usage.total_tokens > 4096:
+            return "Limite de tokens excedido. Tente uma pergunta mais simples."
         return response.text
 
 # ===============================
