@@ -361,7 +361,7 @@ if arquivo:
         st.subheader("📝 Histórico de Perguntas e Respostas")
         for item in st.session_state.memoria:
             st.markdown(f"**Pergunta:** {item['pergunta']}")
-            st.markdown(f"**Resposta:** {item['resposta'][:2500]} ...\n---")
+            st.markdown(f"**Resposta:** {item['resposta'][:2500]} ...\n")
 
     if st.session_state.conclusoes:
         st.subheader("💡 Conclusões do Agente")
