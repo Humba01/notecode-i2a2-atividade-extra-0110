@@ -211,7 +211,8 @@ if arquivo:
     col4, col5, col6 = st.columns(3)
     col7, col8, col9 = st.columns(3)
     col10, col11, col12 = st.columns(3)
-
+    col13, col14, col15 = st.columns(3)
+    col16, col17, col18 = st.columns(3)
 
     pergunta = None  # inicializa
 
@@ -251,10 +252,30 @@ if arquivo:
     with col12:
         if st.button("Gráfico de linha entre colunas numéricas"):
             pergunta = "linha colunas numéricas"
+    with col13:
+        if st.button("Gerar pairplot das colunas numéricas"):
+            pergunta = "pairplot"
+    with col14:
+        if st.button("Gráfico de pizza da coluna categórica"):
+            pergunta = "pizza coluna categórica"
+    with col15:
+        if st.button("Gerar comparativo entre colunas numéricas"):
+            pergunta = "comparativo colunas numéricas"
+    with col16:
+        if st.button("Gerar media entre grupos categóricos"):
+            pergunta = "média entre grupos categóricos"
+    with col17:
+        if st.button("Gerar variância entre grupos categóricos"):
+            pergunta = "variância entre grupos categóricos"
+    with col18:
+        if st.button("Gerar desvio padrão entre grupos categóricos"):
+            pergunta = "desvio padrão entre grupos categóricos"
+
 
     # ----------------------------
     # Pergunta manual (digitada)
     # ----------------------------
+    st.subheader("❔ Pergunta Manual")
     pergunta_manual = st.text_input("Digite sua pergunta:")
     if pergunta_manual:
         pergunta = pergunta_manual
