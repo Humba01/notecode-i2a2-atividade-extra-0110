@@ -209,6 +209,9 @@ if arquivo:
     st.subheader("⚡ Perguntas Rápidas")
     col1, col2, col3 = st.columns(3)
     col4, col5, col6 = st.columns(3)
+    col7, col8, col9 = st.columns(3)
+    col10, col11, col12 = st.columns(3)
+
 
     pergunta = None  # inicializa
 
@@ -230,6 +233,24 @@ if arquivo:
     with col6:
         if st.button("Mostrar distribuição da coluna Amount"):
             pergunta = "distribuição coluna Amount"
+    with col7:
+        if st.button("Gráfico de dispersão entre colunas numéricas"):
+            pergunta = "dispersão colunas numéricas"
+    with col8:
+        if st.button("Gerar tabela cruzada entre colunas categóricas"):
+            pergunta = "tabela cruzada colunas categóricas"
+    with col9:
+        if st.button("Gerar heatmap de correlações"):
+            pergunta = "heatmap"
+    with col10:
+        if st.button("Gerar boxplot da coluna Amount"):
+            pergunta = "boxplot coluna Amount"
+    with col11:
+        if st.button("Gráfico de barras da coluna categórica"):
+            pergunta = "barras coluna categórica"
+    with col12:
+        if st.button("Gráfico de linha entre colunas numéricas"):
+            pergunta = "linha colunas numéricas"
 
     # ----------------------------
     # Pergunta manual (digitada)
