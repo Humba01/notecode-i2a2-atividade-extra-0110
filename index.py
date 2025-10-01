@@ -206,7 +206,7 @@ if arquivo:
     # ----------------------------
     # Perguntas rápidas (pré-configuradas)
     # ----------------------------
-    st.subheader("⚡ Perguntas Rápidas")
+    st.subheader("⚡ Perguntas & Ações Rápidas")
     col1, col2, col3 = st.columns(3)
     col4, col5, col6 = st.columns(3)
     col7, col8, col9 = st.columns(3)
