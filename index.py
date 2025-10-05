@@ -33,6 +33,8 @@ def responder_gemini(pergunta, df):
         response = model.generate_content(prompt)
         if response.usage.total_tokens > 4096:
             return "Limite de tokens excedido. Tente uma pergunta mais simples."
+        if response.usage.total_requests > 6:
+            return "Limite diário de requisições atingido. Tente novamente amanhã."
         return response.text
 
 # ===============================
