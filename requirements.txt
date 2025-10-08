@@ -1,8 +1,9 @@
 streamlit==1.38.0
-pandas>=2.2.2
+pandas==2.2.1
 numpy==1.26.4
 matplotlib==3.9.2
 seaborn==0.13.2
+plotly==5.24.1
 scikit-learn==1.5.2
 fpdf2==2.7.9
 python-dotenv==1.0.1
@@ -10,4 +11,6 @@ odfpy==1.4.1
 pypandoc==1.13
 google-generativeai
 google
+openai
+anthropic
 # venv
